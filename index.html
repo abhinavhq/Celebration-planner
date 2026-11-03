@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gather – Celebration &amp; Event Planner</title>
+<meta name="description" content="Plan weddings, birthdays and community events with a budget, timeline, vendor checklist and ideas in seconds.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #231942;
+  --ink-soft: #5b5173;
+  --paper: #f5f2fb;
+  --card: #ffffff;
+  --line: #ddd6ec;
+  --marigold: #ffb000;
+  --marigold-dark: #e09a00;
+  --teal: #0f8b8d;
+  --coral: #d9482b;
+  --radius: 14px;
+  --display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--body); font-size: 16px; line-height: 1.55;
+}
+h1, h2, h3 { font-family: var(--display); line-height: 1.1; margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+.shell { max-width: 1180px; margin: 0 auto; padding: 24px 20px 64px; }
+header.top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
+.brand { font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: -0.02em; }
+.tagline { color: var(--ink-soft); }
+
+.layout { display: grid; grid-template-columns: 360px 1fr; gap: 28px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+/* Form */
+.panel { background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.panel.sticky { position: sticky; top: 16px; }
+@media (max-width: 900px) { .panel.sticky { position: static; } }
+.panel h2 { font-size: 24px; margin-bottom: 16px; }
+.field { margin-bottom: 14px; }
+.field label, .field .lbl { display: block; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 10px 12px; background: #fbfaff;
+  border: 1.5px solid var(--line); border-radius: 10px;
+}
+.field textarea { resize: vertical; min-height: 76px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row.budget { grid-template-columns: 1fr 96px; }
+
+.types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.types input { position: absolute; opacity: 0; pointer-events: none; }
+.types label {
+  display: block; text-align: center; padding: 12px 6px; cursor: pointer;
+  border: 1.5px solid var(--line); border-radius: 10px; font-weight: 700; font-size: 14px;
+  background: #fbfaff; margin: 0;
+}
+.types .emoji { display: block; font-size: 22px; margin-bottom: 2px; }
+.types input:checked + label { background: var(--ink); border-color: var(--ink); color: #fff; }
+.types input:focus-visible + label { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 20px; border: 0; border-radius: 10px; cursor: pointer; font-weight: 700;
+  background: var(--marigold); color: var(--ink);
+}
+.btn:hover { background: var(--marigold-dark); }
+.btn[disabled] { opacity: .6; cursor: wait; }
+.btn.block { width: 100%; }
+.btn.ghost { background: transparent; border: 1.5px solid var(--line); }
+.btn.ghost:hover { background: #fbfaff; }
+
+/* Results */
+.empty { padding: 48px 28px; text-align: center; color: var(--ink-soft); }
+.empty h2 { color: var(--ink); font-size: 30px; margin-bottom: 10px; }
+.status { padding: 28px; text-align: center; color: var(--ink-soft); }
+.spinner {
+  width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 12px;
+  border: 3px solid var(--line); border-top-color: var(--marigold);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error { background: #fff3f0; border: 1.5px solid #f3c2b6; color: #8a2a14; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; }
+
+.plan-head { margin-bottom: 18px; }
+.plan-head h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.02em; margin-bottom: 8px; }
+.plan-head p { margin: 0; color: var(--ink-soft); max-width: 70ch; }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 0; align-items: center; }
+.progress { margin-left: auto; font-weight: 700; color: var(--teal); }
+
+.tweak { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+.tweak input { flex: 1 1 220px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; }
+.chip { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 5px 12px; font-size: 14px; cursor: pointer; }
+.chip:hover { border-color: var(--ink); }
+
+.section { margin-bottom: 20px; }
+.section > h3 { font-size: 22px; margin-bottom: 12px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+
+.bar-row { margin-bottom: 12px; }
+.bar-row .meta { display: flex; justify-content: space-between; gap: 12px; font-weight: 700; font-size: 15px; }
+.bar-row .note { color: var(--ink-soft); font-size: 14px; }
+.bar { height: 10px; background: #ece7f6; border-radius: 99px; overflow: hidden; margin: 5px 0 3px; }
+.bar > i { display: block; height: 100%; background: var(--teal); border-radius: 99px; }
+.budget-total { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1.5px dashed var(--line); font-weight: 700; }
+.over { color: var(--coral); }
+
+.phase { padding: 16px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; }
+.phase h4, .vendor h4 { font-family: var(--display); font-size: 18px; margin: 0 0 8px; }
+.vendor { padding: 16px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; }
+.vendor .cost { color: var(--ink-soft); font-size: 14px; margin: -4px 0 8px; }
+
+.check { display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--teal); flex: none; }
+.check input:checked + span { text-decoration: line-through; color: var(--ink-soft); }
+
+.ideas ul { margin: 0; padding-left: 20px; }
+.ideas li { margin-bottom: 6px; }
+.ideas h4 { font-family: var(--display); font-size: 18px; margin: 0 0 8px; }
+
+footer { margin-top: 36px; color: var(--ink-soft); font-size: 14px; }
+
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } html { scroll-behavior: auto; } }
+
+@media print {
+  body { background: #fff; }
+  .no-print, .panel.sticky, footer { display: none !important; }
+  .layout { display: block; }
+  .panel, .phase, .vendor { break-inside: avoid; border-color: #ccc; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top no-print">
+    <div class="brand">Gather</div>
+    <div class="tagline">Budget, timeline, vendors and ideas for your next celebration.</div>
+  </header>
+
+  <div class="layout">
+    <form id="form" class="panel sticky no-print" novalidate>
+      <h2>Tell us about it</h2>
+
+      <div class="field">
+        <span class="lbl" id="type-lbl">Event type</span>
+        <div class="types" role="radiogroup" aria-labelledby="type-lbl">
+          <input type="radio" name="type" id="t-wedding" value="wedding" checked>
+          <label for="t-wedding"><span class="emoji" aria-hidden="true">💍</span>Wedding</label>
+          <input type="radio" name="type" id="t-birthday" value="birthday">
+          <label for="t-birthday"><span class="emoji" aria-hidden="true">🎂</span>Birthday</label>
+          <input type="radio" name="type" id="t-community" value="community">
+          <label for="t-community"><span class="emoji" aria-hidden="true">🎪</span>Community</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="name">Who or what is it for?</label>
+        <input id="name" name="name" type="text" maxlength="80" placeholder="Riya &amp; Karan, Dad's 60th, Diwali mela">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="guests">Guests</label>
+          <input id="guests" name="guests" type="number" min="1" max="5000" placeholder="120" required>
+        </div>
+        <div class="field">
+          <label for="date">Date</label>
+          <input id="date" name="date" type="date">
+        </div>
+      </div>
+
+      <div class="row budget">
+        <div class="field">
+          <label for="budget">Total budget</label>
+          <input id="budget" name="budget" type="number" min="0" step="any" placeholder="500000" required>
+        </div>
+        <div class="field">
+          <label for="currency">Currency</label>
+          <select id="currency" name="currency">
+            <option>INR</option><option>USD</option><option>EUR</option><option>GBP</option><option>AED</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="city">City</label>
+        <input id="city" name="city" type="text" maxlength="60" placeholder="Bengaluru" required>
+      </div>
+
+      <div class="field">
+        <label for="vibe">Vibe and must-haves</label>
+        <textarea id="vibe" name="vibe" maxlength="400" placeholder="Garden setting, vegetarian menu, live music, kids attending"></textarea>
+      </div>
+
+      <button class="btn block" id="go" type="submit">Build my plan</button>
+    </form>
+
+    <main id="out" aria-live="polite">
+      <div class="panel empty">
+        <h2>Your plan shows up here</h2>
+        <p>Fill in the basics on the left. You'll get a budget split, a week-by-week timeline, a vendor checklist you can tick off, and ideas for theme, menu and activities.</p>
+      </div>
+    </main>
+  </div>
+
+  <footer class="no-print">Plans are AI-generated estimates. Check prices with local vendors before booking.</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORE = "gather:v1";
+  var form = document.getElementById("form");
+  var out = document.getElementById("out");
+  var goBtn = document.getElementById("go");
+  var state = { inputs: null, plan: null, checks: {} };
+
+  // ---------- helpers ----------
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else if (k.slice(0, 2) === "on") n.addEventListener(k.slice(2), attrs[k]);
+      else n.setAttribute(k, attrs[k]);
+    });
+    [].concat(kids || []).forEach(function (c) {
+      if (c == null) return;
+      n.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    });
+    return n;
+  }
+  function arr(v) { return Array.isArray(v) ? v : []; }
+  function money(n, cur) {
+    var v = Number(n) || 0;
+    try { return new Intl.NumberFormat(undefined, { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(v); }
+    catch (e) { return cur + " " + Math.round(v).toLocaleString(); }
+  }
+  function save() {
+    try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage can be unavailable */ }
+  }
+  function load() {
+    try {
+      var s = JSON.parse(localStorage.getItem(STORE) || "null");
+      if (s && s.plan && s.inputs) { state = { inputs: s.inputs, plan: s.plan, checks: s.checks || {} }; return true; }
+    } catch (e) { /* ignore */ }
+    return false;
+  }
+
+  // ---------- form ----------
+  function readForm() {
+    var d = new FormData(form);
+    return {
+      type: d.get("type"),
+      name: (d.get("name") || "").trim(),
+      guests: d.get("guests"),
+      budget: d.get("budget"),
+      currency: d.get("currency"),
+      date: d.get("date"),
+      city: (d.get("city") || "").trim(),
+      vibe: (d.get("vibe") || "").trim()
+    };
+  }
+  function fillForm(v) {
+    Object.keys(v).forEach(function (k) {
+      var f = form.elements[k];
+      if (!f) return;
+      if (k === "type") { var r = form.querySelector('input[name="type"][value="' + v.type + '"]'); if (r) r.checked = true; }
+      else f.value = v[k] == null ? "" : v[k];
+    });
+  }
+  function validate(v) {
+    if (!v.guests || Number(v.guests) < 1) return "Add how many guests are coming.";
+    if (!v.budget || Number(v.budget) <= 0) return "Add a total budget.";
+    if (!v.city) return "Add the city so prices and vendors fit.";
+    return "";
+  }
+
+  // ---------- API ----------
+  function showLoading(msg) {
+    out.replaceChildren(el("div", { class: "panel status" }, [
+      el("div", { class: "spinner", role: "status" }),
+      el("div", { text: msg })
+    ]));
+  }
+  function showError(msg) {
+    var box = el("div", { class: "error", role: "alert", text: msg });
+    if (state.plan) { out.insertBefore(box, out.firstChild); }
+    else out.replaceChildren(box);
+  }
+
+  function request(payload, loadingMsg) {
+    goBtn.disabled = true;
+    if (!state.plan || !payload.tweak) showLoading(loadingMsg);
+    else document.querySelectorAll("#tweak-btn").forEach(function (b) { b.disabled = true; b.textContent = "Updating…"; });
+
+    return fetch("/api/plan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.j.plan) throw new Error(res.j.error || "Something went wrong.");
+        return res.j.plan;
+      })
+      .finally(function () { goBtn.disabled = false; });
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var v = readForm();
+    var problem = validate(v);
+    if (problem) { showError(problem); return; }
+    request(v, "Planning your " + v.type + "… this takes about 10 seconds.")
+      .then(function (plan) {
+        state = { inputs: v, plan: plan, checks: {} };
+        save(); render();
+        out.scrollIntoView({ behavior: "smooth", block: "start" });
+      })
+      .catch(function (err) { state.plan = null; showError(err.message + " Press Build my plan to retry."); });
+  });
+
+  function tweak(text) {
+    text = (text || "").trim();
+    if (!text || !state.plan) return;
+    var payload = Object.assign({}, state.inputs, { previousPlan: state.plan, tweak: text });
+    request(payload, "Updating your plan…")
+      .then(function (plan) { state.plan = plan; state.checks = {}; save(); render(); })
+      .catch(function (err) { render(); showError(err.message); });
+  }
+
+  // ---------- render ----------
+  function checkItem(id, label) {
+    var cb = el("input", { type: "checkbox", id: id });
+    cb.checked = !!state.checks[id];
+    cb.addEventListener("change", function () { state.checks[id] = cb.checked; save(); updateProgress(); });
+    return el("label", { class: "check", for: id }, [cb, el("span", { text: label })]);
+  }
+
+  function totalTasks() {
+    var p = state.plan, n = 0;
+    arr(p.timeline).forEach(function (t) { n += arr(t.tasks).length; });
+    arr(p.vendors).forEach(function (v) { n += arr(v.checklist).length; });
+    return n;
+  }
+  function updateProgress() {
+    var done = Object.keys(state.checks).filter(function (k) { return state.checks[k]; }).length;
+    var node = document.getElementById("progress");
+    if (node) node.textContent = done + " of " + totalTasks() + " tasks done";
+  }
+
+  function render() {
+    var p = state.plan, cur = (p.budget && p.budget.currency) || state.inputs.currency || "INR";
+    var frag = document.createDocumentFragment();
+
+    // header
+    frag.appendChild(el("div", { class: "plan-head" }, [
+      el("h2", { text: p.title || "Your plan" }),
+      el("p", { text: p.summary || "" }),
+      el("div", { class: "toolbar no-print" }, [
+        el("button", { class: "btn ghost", type: "button", onclick: function () { window.print(); } , text: "Print or save as PDF" }),
+        el("button", { class: "btn ghost", type: "button", onclick: copyText, id: "copy-btn", text: "Copy as text" }),
+        el("span", { class: "progress", id: "progress" })
+      ])
+    ]));
+
+    // tweak
+    var input = el("input", { type: "text", id: "tweak-input", maxlength: "300", placeholder: "Change something, e.g. make it cheaper", "aria-label": "Describe a change to the plan" });
+    var tbtn = el("button", { class: "btn", id: "tweak-btn", type: "button", text: "Update plan", onclick: function () { tweak(input.value); } });
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); tweak(input.value); } });
+    var chips = el("div", { class: "chips" }, ["Make it cheaper", "Outdoor only", "Fewer guests", "More traditional", "Add a kids' corner"].map(function (t) {
+      return el("button", { class: "chip", type: "button", text: t, onclick: function () { tweak(t); } });
+    }));
+    frag.appendChild(el("div", { class: "tweak no-print" }, [input, tbtn, chips]));
+
+    // budget
+    var items = arr(p.budget && p.budget.items);
+    var sum = items.reduce(function (a, i) { return a + (Number(i.amount) || 0); }, 0);
+    var total = Number(p.budget && p.budget.total) || Number(state.inputs.budget) || sum;
+    var max = Math.max.apply(null, items.map(function (i) { return Number(i.amount) || 0; }).concat([1]));
+    var budgetCard = el("div", { class: "panel" }, items.map(function (i) {
+      var amt = Number(i.amount) || 0;
+      var bar = el("div", { class: "bar" }, [el("i", { style: "width:" + Math.round((amt / max) * 100) + "%" })]);
+      return el("div", { class: "bar-row" }, [
+        el("div", { class: "meta" }, [el("span", { text: i.category || "" }), el("span", { text: money(amt, cur) })]),
+        bar,
+        el("div", { class: "note", text: i.note || "" })
+      ]);
+    }).concat([
+      el("div", { class: "budget-total" }, [
+        el("span", { text: "Planned: " + money(sum, cur) }),
+        el("span", { class: sum > total ? "over" : "", text: sum > total ? "Over budget by " + money(sum - total, cur) : money(total - sum, cur) + " left of " + money(total, cur) })
+      ])
+    ]));
+    frag.appendChild(el("section", { class: "section" }, [el("h3", { text: "Budget" }), budgetCard]));
+
+    // timeline
+    frag.appendChild(el("section", { class: "section" }, [
+      el("h3", { text: "Timeline" }),
+      el("div", { class: "grid2" }, arr(p.timeline).map(function (ph, pi) {
+        return el("div", { class: "phase" }, [el("h4", { text: ph.when || "" })].concat(
+          arr(ph.tasks).map(function (t, ti) { return checkItem("t-" + pi + "-" + ti, t); })
+        ));
+      }))
+    ]));
+
+    // vendors
+    frag.appendChild(el("section", { class: "section" }, [
+      el("h3", { text: "Vendor checklist" }),
+      el("div", { class: "grid2" }, arr(p.vendors).map(function (v, vi) {
+        return el("div", { class: "vendor" }, [
+          el("h4", { text: v.category || "" }),
+          el("div", { class: "cost", text: v.estimatedCost ? "About " + money(v.estimatedCost, cur) : "" })
+        ].concat(arr(v.checklist).map(function (t, ti) { return checkItem("v-" + vi + "-" + ti, t); })));
+      }))
+    ]));
+
+    // ideas
+    var ideas = p.ideas || {};
+    var lists = [["Theme", ideas.theme], ["Menu", ideas.menu], ["Activities", ideas.activities], ["Personal touches", ideas.personalTouches]];
+    frag.appendChild(el("section", { class: "section ideas" }, [
+      el("h3", { text: "Ideas" }),
+      el("div", { class: "grid2" }, lists.filter(function (l) { return arr(l[1]).length; }).map(function (l) {
+        return el("div", { class: "panel" }, [
+          el("h4", { text: l[0] }),
+          el("ul", {}, arr(l[1]).map(function (t) { return el("li", { text: t }); }))
+        ]);
+      }))
+    ]));
+
+    out.replaceChildren(frag);
+    updateProgress();
+  }
+
+  function copyText() {
+    var p = state.plan, cur = (p.budget && p.budget.currency) || "INR", L = [];
+    L.push(p.title || "Event plan", p.summary || "", "", "BUDGET");
+    arr(p.budget && p.budget.items).forEach(function (i) { L.push("- " + i.category + ": " + money(i.amount, cur) + " (" + (i.note || "") + ")"); });
+    L.push("", "TIMELINE");
+    arr(p.timeline).forEach(function (t) { L.push(t.when); arr(t.tasks).forEach(function (x) { L.push("  [ ] " + x); }); });
+    L.push("", "VENDORS");
+    arr(p.vendors).forEach(function (v) { L.push(v.category); arr(v.checklist).forEach(function (x) { L.push("  [ ] " + x); }); });
+    var b = document.getElementById("copy-btn");
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy as text"; }, 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(L.join("\n")).then(done, function () { b.textContent = "Copy failed"; });
+    else b.textContent = "Copy not supported";
+  }
+
+  // restore last plan on reload
+  if (load()) { fillForm(state.inputs); render(); }
+})();
+</script>
+</body>
+</html>

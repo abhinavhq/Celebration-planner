@@ -1,0 +1,5 @@
+{
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "functions": { "api/plan.js": { "maxDuration": 60 } }
+}
